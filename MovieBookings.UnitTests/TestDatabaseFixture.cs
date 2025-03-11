@@ -29,18 +29,7 @@ namespace MovieBookings.UnitTests
 
             if (context.Database.EnsureCreated())
             {
-                context.Movies.Add(new Movie { Id = 1, Title = "Parasite", Duration = 132 });
-
-                context.Shows.AddRange([
-                    new Show { Id = 1, MovieId = 1, StartAt = DateTime.Today.AddHours(15), TotalSeat = 7 },
-                    new Show { Id = 2, MovieId = 1, StartAt = DateTime.Today.AddHours(18), TotalSeat = 7 },
-                ]);
-
-                context.Seats.Add(new Seat { Id = 1, Row = 'A', Number = 1, Price = 8.00 });
-
-                context.Users.Add(new User { Id = 1, Email = "andrea.test@email.com", Name = "Andrea Test" });
-
-                context.SaveChanges();
+                DatabaseSeeder.SeedUnitTestData(context);
             }
         }
 

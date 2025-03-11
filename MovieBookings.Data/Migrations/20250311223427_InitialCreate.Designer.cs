@@ -11,7 +11,7 @@ using MovieBookings.Data;
 namespace MovieBookings.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250311111532_InitialCreate")]
+    [Migration("20250311223427_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -19,33 +19,6 @@ namespace MovieBookings.Data.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.2");
-
-            modelBuilder.Entity("MovieBookings.Data.BookedSeat", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("BookingId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("SeatId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("ShowId")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("BookingId");
-
-                    b.HasIndex("ShowId");
-
-                    b.HasIndex("SeatId", "ShowId")
-                        .IsUnique();
-
-                    b.ToTable("BookedSeats");
-                });
 
             modelBuilder.Entity("MovieBookings.Data.Booking", b =>
                 {
@@ -126,6 +99,35 @@ namespace MovieBookings.Data.Migrations
                     b.ToTable("Shows");
                 });
 
+            modelBuilder.Entity("MovieBookings.Data.ShowSeat", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("BookingId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("SeatId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("ShowId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BookingId");
+
+                    b.HasIndex("SeatId");
+
+                    b.HasIndex("ShowId");
+
+                    b.ToTable("ShowSeats");
+                });
+
             modelBuilder.Entity("MovieBookings.Data.User", b =>
                 {
                     b.Property<int>("Id")
@@ -143,33 +145,6 @@ namespace MovieBookings.Data.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Users");
-                });
-
-            modelBuilder.Entity("MovieBookings.Data.BookedSeat", b =>
-                {
-                    b.HasOne("MovieBookings.Data.Booking", "Booking")
-                        .WithMany("BookedSeats")
-                        .HasForeignKey("BookingId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("MovieBookings.Data.Seat", "Seat")
-                        .WithMany()
-                        .HasForeignKey("SeatId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("MovieBookings.Data.Show", "Show")
-                        .WithMany("BookedSeats")
-                        .HasForeignKey("ShowId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Booking");
-
-                    b.Navigation("Seat");
-
-                    b.Navigation("Show");
                 });
 
             modelBuilder.Entity("MovieBookings.Data.Booking", b =>
@@ -194,6 +169,28 @@ namespace MovieBookings.Data.Migrations
                     b.Navigation("Movie");
                 });
 
+            modelBuilder.Entity("MovieBookings.Data.ShowSeat", b =>
+                {
+                    b.HasOne("MovieBookings.Data.Booking", null)
+                        .WithMany("BookedSeats")
+                        .HasForeignKey("BookingId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("MovieBookings.Data.Seat", "Seat")
+                        .WithMany()
+                        .HasForeignKey("SeatId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MovieBookings.Data.Show", null)
+                        .WithMany("Seats")
+                        .HasForeignKey("ShowId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Seat");
+                });
+
             modelBuilder.Entity("MovieBookings.Data.Booking", b =>
                 {
                     b.Navigation("BookedSeats");
@@ -206,7 +203,7 @@ namespace MovieBookings.Data.Migrations
 
             modelBuilder.Entity("MovieBookings.Data.Show", b =>
                 {
-                    b.Navigation("BookedSeats");
+                    b.Navigation("Seats");
                 });
 #pragma warning restore 612, 618
         }

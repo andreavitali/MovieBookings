@@ -17,7 +17,7 @@ public class Show
     public DateTime StartAt { get; set; }
     public int TotalSeat { get; set; }
 
-    public ICollection<BookedSeat> BookedSeats { get; set; } = new List<BookedSeat>();
+    public ICollection<ShowSeat> Seats { get; set; } = new List<ShowSeat>();
 }
 
 public class Seat
@@ -30,6 +30,22 @@ public class Seat
     public override string ToString() => $"{Row}-{Number}";
 }
 
+public enum ShowSeatStatus
+{
+    Available = 0,
+    Booked = 1
+}
+
+public class ShowSeat
+{
+    public int Id { get; set; }
+    public int ShowId { get; set; }
+    public int SeatId { get; set; }
+    public Seat Seat { get; set; }
+    public int? BookingId { get; set; }
+    public ShowSeatStatus Status { get; set; }
+}
+
 public class Booking
 {
     public int Id { get; set; }
@@ -37,18 +53,7 @@ public class Booking
     public User User { get; set; } = null!;
     public double TotalPrice { get; set; }
 
-    public ICollection<BookedSeat> BookedSeats { get; set; } = new List<BookedSeat>();
-}
-
-public class BookedSeat
-{
-    public int Id { get; set; }
-    public int SeatId { get; set; }
-    public Seat Seat { get; set; }
-    public int ShowId { get; set; }
-    public Show Show { get; set; }
-    public int BookingId { get; set; }
-    public Booking Booking { get; set; }
+    public ICollection<ShowSeat> BookedSeats { get; set; } = new List<ShowSeat>();
 }
 
 public class User

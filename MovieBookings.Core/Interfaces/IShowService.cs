@@ -1,8 +1,7 @@
-﻿namespace MovieBookings.Core.Interfaces
+﻿namespace MovieBookings.Core.Interfaces;
+
+public interface IShowService
 {
-    public interface IShowService
-    {
-        Task<List<ShowDTO>> GetAllShowsAsync();
-        Task<ShowDTO?> GetShowByIdAsync(int Id);
-    }
+    Task<List<ShowResponse>> GetAllAsync();
+    Task<ShowResponse?> GetByIdAsync(int Id);
 }

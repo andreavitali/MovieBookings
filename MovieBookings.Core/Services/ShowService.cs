@@ -6,22 +6,16 @@ namespace MovieBookings.Core.Services;
 
 public class ShowService(ApplicationDbContext DbContext) : IShowService
 {
-    public async Task<List<ShowDTO>> GetAllShowsAsync()
+    public async Task<List<ShowResponse>> GetAllAsync()
     {
-        return await DbContext.Shows
-            .Include(s => s.Movie)
-            .Include(s => s.BookedSeats)
-                .ThenInclude(bs => bs.Seat)
+        return await GetShowCommonQuery()
             .Select(s => s.MapToShowDTO())
             .ToListAsync();
     }
 
-    public async Task<ShowDTO?> GetShowByIdAsync(int Id)
+    public async Task<ShowResponse?> GetByIdAsync(int Id)
     {
-        var foundShow = await DbContext.Shows
-            .Include(s => s.Movie)
-            .Include(s => s.BookedSeats)
-                .ThenInclude(bs => bs.Seat)
+        var foundShow = await GetShowCommonQuery()
             .SingleOrDefaultAsync(s => s.Id == Id);
 
         return foundShow?.MapToShowDTO();
@@ -30,8 +24,9 @@ public class ShowService(ApplicationDbContext DbContext) : IShowService
     private IQueryable<Show> GetShowCommonQuery()
     {
         return DbContext.Shows
+            .AsNoTracking()
             .Include(s => s.Movie)
-            .Include(s => s.BookedSeats)
-                .ThenInclude(bs => bs.Seat);
+            .Include(s => s.Seats)
+                .ThenInclude(ss => ss.Seat);
     }
 }

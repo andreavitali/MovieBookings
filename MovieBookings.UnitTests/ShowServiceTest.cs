@@ -18,64 +18,67 @@ public class ShowServiceTest : IClassFixture<TestDatabaseFixture>
     public async void GetAllShowsAsync_ReturnsAllShows()
     {
         var service = new ShowService(Fixture.CreateContext());
-        var shows = await service.GetAllShowsAsync();
+
+        var shows = await service.GetAllAsync();
+
         Assert.Equal(2, shows.Count);
-        Assert.IsType<List<ShowDTO>>(shows);
+        Assert.IsType<List<ShowResponse>>(shows);
     }
 
     [Fact]
-    public async Task GetShowByIdAsync_IfExists_ReturnsTheShow()
+    public async void GetShowByIdAsync_IfExists_ReturnsTheShow()
     {
-        var service = new ShowService(Fixture.CreateContext());
-        var show = await service.GetShowByIdAsync(1);
+        var context = Fixture.CreateContext();
+        var service = new ShowService(context);
+
+        var show = await service.GetByIdAsync(2);
+
         Assert.NotNull(show);
-        Assert.IsType<ShowDTO>(show);
-        Assert.IsType<MovieDTO>(show.Movie);
-        Assert.Equal(7, show.TotalSeats);
-        Assert.Equal(7, show.AvailableSeats);
-        Assert.Empty(show.BookedSeats);
+        Assert.IsType<ShowResponse>(show);
+        Assert.IsType<Movie>(show.Movie);
+        Assert.Equal(context.Seats.Count(), show.Seats.Count);
+        Assert.All(show.Seats, s => {
+            Assert.IsType<Core.Seat>(s);
+            Assert.Equal(ShowSeatStatus.Available, s.Status);
+        });
     }
 
     [Fact]
     public async void GetShowByIdAsync_IfNotExists_ReturnsNull()
     {
         var service = new ShowService(Fixture.CreateContext());
-        var show = await service.GetShowByIdAsync(int.MaxValue);
+
+        var show = await service.GetByIdAsync(int.MaxValue);
+
         Assert.Null(show);
     }
 
     [Fact]
-    public async Task GetShowByIdAsync_IfExists_AndHasBookedSeats_ReturnsBookedSeats()
+    public async void GetShowByIdAsync_IfExists_AndHasBookedSeats_ReturnsSeats()
     {
         var context = Fixture.CreateContext();
 
-        // Add BookedSeats
         var seat = await context.Seats.FirstAsync();
-        var showId = 1;
-        var userId = 1;
-
-        var booking = context.Bookings.Add(new Booking {
-            UserId = userId,
-            BookedSeats = [new BookedSeat { SeatId = seat.Id, ShowId = showId }]
+        var user = await context.Users.FirstAsync();
+        var firstShow = await context.Shows.FirstAsync();
+        var showSeat = await context.ShowSeats.SingleAsync(ss => ss.ShowId == firstShow.Id && ss.SeatId == seat.Id);
+        showSeat.Status = ShowSeatStatus.Booked;
+        var booking = await context.Bookings.AddAsync(new Booking
+        {
+            UserId = user.Id,
+            BookedSeats = [showSeat]
         });
 
         await context.SaveChangesAsync();
 
-        var expectedSeatDescription = new Seat() { Row = seat.Row, Number = seat.Number }.ToString();
-
         var service = new ShowService(context);
-        var show = await service.GetShowByIdAsync(showId);
+
+        var show = await service.GetByIdAsync(firstShow.Id);
 
         Assert.NotNull(show);
-        Assert.Equal(7, show.TotalSeats);
-        Assert.Equal(6, show.AvailableSeats);
-        Assert.Single(show.BookedSeats);
-        Assert.IsType<BookedSeatDTO>(show.BookedSeats[0]);
-        Assert.Collection(show.BookedSeats, bs =>
+        Assert.All(show.Seats, bs =>
         {
-            Assert.Equal(1, bs.Id);
-            Assert.Equal(1, bs.BookingId);
-            Assert.Equal(expectedSeatDescription, bs.Seat);
+            Assert.Equal((bs.Id == showSeat.SeatId ? ShowSeatStatus.Booked : ShowSeatStatus.Available), bs.Status);
         });
     }
 }

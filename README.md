@@ -5,11 +5,7 @@
 - EntityFramework with SQLite provider
 
 ## Missing features or improvements
-- Authentication via JWT
-- Add an admin role able to see and edit the bookings of all users
-- Improve database models to handle multiple theathres each one with multiple screens
-- Improve database models to keep track of available/booked seats without the need of runtime calculation
-- Use Result pattern instead of throwing exceptions for domain errors
+- TODO
 
 ## Usage
 
