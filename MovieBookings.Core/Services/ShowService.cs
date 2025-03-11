@@ -8,20 +8,14 @@ public class ShowService(ApplicationDbContext DbContext) : IShowService
 {
     public async Task<List<ShowDTO>> GetAllShowsAsync()
     {
-        return await DbContext.Shows
-            .Include(s => s.Movie)
-            .Include(s => s.BookedSeats)
-                .ThenInclude(bs => bs.Seat)
+        return await GetShowCommonQuery()
             .Select(s => s.MapToShowDTO())
             .ToListAsync();
     }
 
     public async Task<ShowDTO?> GetShowByIdAsync(int Id)
     {
-        var foundShow = await DbContext.Shows
-            .Include(s => s.Movie)
-            .Include(s => s.BookedSeats)
-                .ThenInclude(bs => bs.Seat)
+        var foundShow = await GetShowCommonQuery()
             .SingleOrDefaultAsync(s => s.Id == Id);
 
         return foundShow?.MapToShowDTO();

@@ -27,7 +27,7 @@ public class ShowServiceTest : IClassFixture<TestDatabaseFixture>
     public async Task GetShowByIdAsync_IfExists_ReturnsTheShow()
     {
         var service = new ShowService(Fixture.CreateContext());
-        var show = await service.GetShowByIdAsync(1);
+        var show = await service.GetShowByIdAsync(2);
         Assert.NotNull(show);
         Assert.IsType<ShowDTO>(show);
         Assert.IsType<MovieDTO>(show.Movie);
