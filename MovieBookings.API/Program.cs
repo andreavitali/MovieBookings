@@ -1,4 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using MovieBookings.API.Endpoints;
+using MovieBookings.Core.Interfaces;
+using MovieBookings.Core.Services;
 using MovieBookings.Data;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -8,12 +11,18 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddProblemDetails();
+
 // Add DbContext
 builder.Services.AddDbContext<ApplicationDbContext>(
     options => options
         .UseSqlite(builder.Configuration.GetConnectionString("Default"))
         .UseSeeding((context, _) => DatabaseSeeder.SeedData(context))
 );
+
+// Add my services
+builder.Services.AddScoped<IShowService, ShowService>();
+builder.Services.AddScoped<IBookingService, BookingService>();
 
 var app = builder.Build();
 
@@ -24,37 +33,18 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseStatusCodePages();
 app.UseHttpsRedirection();
+app.UseExceptionHandler();
 
 //app.UseAuthorization();
 //app.UseAuthentication();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+// Add MinimalAPI endpoints
+app.MapShowsEndpoints();
+app.MapBookingsEndpoints();
 
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast = Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-//.RequireAuthorization()
-.WithName("GetWeatherForecast")
-.WithSummary("Summary")
-.WithDescription("Description")
-.WithOpenApi();
-
+// Run!
 app.Run();
 
-internal record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
+public partial class Program { }

@@ -24,7 +24,7 @@ public class BookingServiceTest : IClassFixture<TestDatabaseFixture>, IDisposabl
     }
 
     [Fact]
-    public async void GetAllByUserIdAsync_ReturnsAllBookingsForAUser()
+    public async void GetAllByUserIdAsync_ShouldReturnAllBookingsForAUser()
     {
         var context = Fixture.CreateContext();
         var user = await context.Users.FirstAsync();
@@ -63,7 +63,7 @@ public class BookingServiceTest : IClassFixture<TestDatabaseFixture>, IDisposabl
     }
 
     [Fact]
-    public async void GetAllByUserIdAsync_IfUserDontExists_ReturnsEmptyList()
+    public async void GetAllByUserIdAsync_IfUserDontExists_ShouldReturnEmptyList()
     {
         var service = new BookingService(Fixture.CreateContext());
         var bookings = await service.GetAllByUserIdAsync(int.MaxValue);
@@ -71,7 +71,7 @@ public class BookingServiceTest : IClassFixture<TestDatabaseFixture>, IDisposabl
     }
 
     [Fact]
-    public async void DeleteAsync_IfBookingExists_RemoveBooking_AndUpdateShowSeat()
+    public async void DeleteAsync_IfBookingExists_ShouldRemoveBooking_And_UpdateShowSeat()
     {
         var context = Fixture.CreateContext();
         var user = await context.Users.FirstAsync();
@@ -98,7 +98,7 @@ public class BookingServiceTest : IClassFixture<TestDatabaseFixture>, IDisposabl
     }
 
     [Fact]
-    public async void CreateBookingAsync_IfSeatsAreAvailable_CreateBooking()
+    public async void CreateBookingAsync_IfSeatsAreAvailable_ShouldCreateBooking()
     {
         var context = Fixture.CreateContext();
         var user = await context.Users.FirstAsync();
@@ -116,7 +116,7 @@ public class BookingServiceTest : IClassFixture<TestDatabaseFixture>, IDisposabl
     }
 
     [Fact]
-    public async void CreateBookingAsync_IfSeatAlreadyBooked_ThrowsException()
+    public async void CreateBookingAsync_IfSeatAlreadyBooked_ShouldThrowsException()
     {
         var context = Fixture.CreateContext();
         var user1 = await context.Users.FindAsync(1);
@@ -133,19 +133,19 @@ public class BookingServiceTest : IClassFixture<TestDatabaseFixture>, IDisposabl
     }
 
     [Fact(Skip = "NotImplemented")]
-    public async void CreateBookingAsync_IfSeatsAreNotSpecified_ButAvailable_CreateBooking()
+    public async void CreateBookingAsync_IfSeatsAreNotSpecified_ButAvailable_ShouldCreateBooking()
     {
         
     }
 
     [Fact(Skip = "NotImplemented")]
-    public async void CreateBookingAsync_IfSomeSeatsAreSpecified_AndOtherNot_ButAvailable_CreateBooking()
+    public async void CreateBookingAsync_WithOnlySomeSeatsSpecified_ButAvailable_ShouldCreateBooking()
     {
 
     }
 
     [Fact(Skip = "NotImplemented")]
-    public async void CreateBookingAsync_IfSeatsAreNotSpecified_AndNoAvailabilty_ThrowsException()
+    public async void CreateBookingAsync_IfSeatsAreNotSpecified_AndNotAvailabile_ShouldThrowsException()
     {
 
     }

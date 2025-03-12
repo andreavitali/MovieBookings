@@ -15,7 +15,7 @@ public class ShowServiceTest : IClassFixture<TestDatabaseFixture>
     public TestDatabaseFixture Fixture { get; }
 
     [Fact]
-    public async void GetAllShowsAsync_ReturnsAllShows()
+    public async void GetAllShowsAsync_ShouldReturnAllShows()
     {
         var service = new ShowService(Fixture.CreateContext());
 
@@ -26,7 +26,7 @@ public class ShowServiceTest : IClassFixture<TestDatabaseFixture>
     }
 
     [Fact]
-    public async void GetShowByIdAsync_IfExists_ReturnsTheShow()
+    public async void GetShowByIdAsync_IfExists_ShouldReturnTheShow()
     {
         var context = Fixture.CreateContext();
         var service = new ShowService(context);
@@ -44,7 +44,7 @@ public class ShowServiceTest : IClassFixture<TestDatabaseFixture>
     }
 
     [Fact]
-    public async void GetShowByIdAsync_IfNotExists_ReturnsNull()
+    public async void GetShowByIdAsync_IfNotExists_ShouldReturnNull()
     {
         var service = new ShowService(Fixture.CreateContext());
 
@@ -54,7 +54,7 @@ public class ShowServiceTest : IClassFixture<TestDatabaseFixture>
     }
 
     [Fact]
-    public async void GetShowByIdAsync_IfExists_AndHasBookedSeats_ReturnsSeats()
+    public async void GetShowByIdAsync_IfExists_AndHasBookedSeats_ShouldReturnSeats()
     {
         var context = Fixture.CreateContext();
 

@@ -1,4 +1,6 @@
-﻿namespace MovieBookings.Data;
+﻿using System.Text.Json.Serialization;
+
+namespace MovieBookings.Data;
 
 public class Movie
 {
@@ -6,7 +8,7 @@ public class Movie
     public string Title { get; set; }
     public int Duration { get; set; }
 
-    public ICollection<Show> Shows { get; set; } = new List<Show>();
+    //public ICollection<Show> Shows { get; set; } = new List<Show>();
 }
 
 public class Show
@@ -20,6 +22,7 @@ public class Show
     public ICollection<ShowSeat> Seats { get; set; } = new List<ShowSeat>();
 }
 
+[JsonConverter(typeof(JsonStringEnumConverter<ShowSeatStatus>))]
 public enum ShowSeatStatus
 {
     Available = 0,
