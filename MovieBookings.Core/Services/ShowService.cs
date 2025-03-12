@@ -26,7 +26,6 @@ public class ShowService(ApplicationDbContext DbContext) : IShowService
         return DbContext.Shows
             .AsNoTracking()
             .Include(s => s.Movie)
-            .Include(s => s.Seats)
-                .ThenInclude(ss => ss.Seat);
+            .Include(s => s.Seats);
     }
 }

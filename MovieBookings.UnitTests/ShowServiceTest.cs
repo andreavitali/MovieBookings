@@ -36,9 +36,9 @@ public class ShowServiceTest : IClassFixture<TestDatabaseFixture>
         Assert.NotNull(show);
         Assert.IsType<ShowResponse>(show);
         Assert.IsType<Movie>(show.Movie);
-        Assert.Equal(context.Seats.Count(), show.Seats.Count);
-        Assert.All(show.Seats, s => {
-            Assert.IsType<Core.Seat>(s);
+        Assert.All(show.Seats, s =>
+        {
+            Assert.IsType<Seat>(s);
             Assert.Equal(ShowSeatStatus.Available, s.Status);
         });
     }
@@ -58,10 +58,9 @@ public class ShowServiceTest : IClassFixture<TestDatabaseFixture>
     {
         var context = Fixture.CreateContext();
 
-        var seat = await context.Seats.FirstAsync();
         var user = await context.Users.FirstAsync();
         var firstShow = await context.Shows.FirstAsync();
-        var showSeat = await context.ShowSeats.SingleAsync(ss => ss.ShowId == firstShow.Id && ss.SeatId == seat.Id);
+        var showSeat = await context.ShowSeats.FirstAsync(ss => ss.ShowId == firstShow.Id);
         showSeat.Status = ShowSeatStatus.Booked;
         var booking = await context.Bookings.AddAsync(new Booking
         {
@@ -78,7 +77,7 @@ public class ShowServiceTest : IClassFixture<TestDatabaseFixture>
         Assert.NotNull(show);
         Assert.All(show.Seats, bs =>
         {
-            Assert.Equal((bs.Id == showSeat.SeatId ? ShowSeatStatus.Booked : ShowSeatStatus.Available), bs.Status);
+            Assert.Equal((bs.Id == showSeat.Id ? ShowSeatStatus.Booked : ShowSeatStatus.Available), bs.Status);
         });
     }
 }

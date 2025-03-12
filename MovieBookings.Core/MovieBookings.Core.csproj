@@ -10,8 +10,4 @@
     <ProjectReference Include="..\MovieBookings.Data\MovieBookings.Data.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Exceptions\" />
-  </ItemGroup>
-
 </Project>

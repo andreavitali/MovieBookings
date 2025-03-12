@@ -20,16 +20,6 @@ public class Show
     public ICollection<ShowSeat> Seats { get; set; } = new List<ShowSeat>();
 }
 
-public class Seat
-{
-    public int Id { get; set; }
-    public char Row { get; set; }
-    public int Number { get; set; }
-    public double Price { get; set; }
-
-    public override string ToString() => $"{Row}-{Number}";
-}
-
 public enum ShowSeatStatus
 {
     Available = 0,
@@ -40,10 +30,19 @@ public class ShowSeat
 {
     public int Id { get; set; }
     public int ShowId { get; set; }
-    public int SeatId { get; set; }
-    public Seat Seat { get; set; }
+    public string SeatNumber { get; set; }
+    public double Price { get; set; }
     public int? BookingId { get; set; }
     public ShowSeatStatus Status { get; set; }
+}
+
+// Not mapped to the database, just a tool to represent seat data for seeding
+public class SeatData
+{
+    public char Row { get; set; }
+    public int Number { get; set; }
+    public double Price { get; set; }
+    public string Description => $"{Row}-{Number}";
 }
 
 public class Booking

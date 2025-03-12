@@ -5,6 +5,19 @@ namespace MovieBookings.Data
 {
     public static class DatabaseSeeder
     {
+        public static List<SeatData> GenerateSeatData(int rows, int columns)
+        {
+            var seats = new List<SeatData>();
+            for (int i = 0; i < rows; i++)
+            {
+                for (int j = 0; j < columns; j++)
+                {
+                    seats.Add(new SeatData { Row = (char)(i + 65), Number = j + 1, Price = 8.00 + (1*i) });
+                }
+            }
+            return seats;
+        }
+
         public static void SeedData(DbContext context)
         {
             // Movies
@@ -14,16 +27,7 @@ namespace MovieBookings.Data
             ]);
 
             // Seats
-            List<Seat> availableSeats = [
-                new Seat { Id = 1, Row = 'A', Number = 1, Price = 8.00 },
-                new Seat { Id = 2, Row = 'A', Number = 2, Price = 12.00 },
-                new Seat { Id = 3, Row = 'A', Number = 3, Price = 8.00 },
-                new Seat { Id = 4, Row = 'B', Number = 1, Price = 7.00 },
-                new Seat { Id = 5, Row = 'B', Number = 2, Price = 7.00 },
-                new Seat { Id = 6, Row = 'B', Number = 3, Price = 7.00 }
-            ];
-
-            context.Set<Seat>().AddRange(availableSeats);
+            List<SeatData> availableSeats = GenerateSeatData(3, 3);
 
             // Shows
             context.Set<Show>().AddRange([
@@ -35,7 +39,7 @@ namespace MovieBookings.Data
             // ShowSeats
             var showSeats = context.Set<Show>().Local
                     .SelectMany(show => availableSeats.Select(seat => (Show: show, Seat: seat)))
-                    .Select(t => new ShowSeat { ShowId = t.Show.Id, SeatId = t.Seat.Id, Status = ShowSeatStatus.Available })
+                    .Select(t => new ShowSeat { ShowId = t.Show.Id, SeatNumber = t.Seat.Description, Price = t.Seat.Price, Status = ShowSeatStatus.Available })
                     .ToList();
 
             context.Set<ShowSeat>().AddRange(showSeats);
@@ -48,15 +52,8 @@ namespace MovieBookings.Data
 
         public static void SeedUnitTestData(ApplicationDbContext context)
         {
-            var availableSeats = new List<Seat>
-                {
-                    new() { Id = 1, Row = 'A', Number = 1, Price = 8.00 },
-                    new() { Id = 2, Row = 'A', Number = 2, Price = 8.00 },
-                    new() { Id = 3, Row = 'B', Number = 1, Price = 8.00 },
-                    new() { Id = 4, Row = 'B', Number = 2, Price = 8.00 }
-                };
-
-            context.Set<Seat>().AddRange(availableSeats);
+            // Seats
+            List<SeatData> availableSeats = GenerateSeatData(2, 2);
 
             context.Movies.Add(new Movie { Id = 1, Title = "Parasite", Duration = 132 });
 
@@ -67,12 +64,13 @@ namespace MovieBookings.Data
 
             var showSeats = context.Shows.Local.ToList()
                 .SelectMany(show => availableSeats.Select(seat => (Show: show, Seat: seat)))
-                .Select(t => new ShowSeat { ShowId = t.Show.Id, SeatId = t.Seat.Id, Status = ShowSeatStatus.Available })
+                .Select(t => new ShowSeat { ShowId = t.Show.Id, SeatNumber = t.Seat.Description, Price = t.Seat.Price, Status = ShowSeatStatus.Available })
                 .ToList();
 
             context.ShowSeats.AddRange(showSeats);
 
             context.Users.Add(new User { Id = 1, Email = "andrea.test@email.com", Name = "Andrea Test" });
+            context.Users.Add(new User { Id = 2, Email = "pippo@email.com", Name = "Pippo" });
 
             context.SaveChanges();
         }

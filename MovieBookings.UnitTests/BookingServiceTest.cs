@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using MovieBookings.Core;
+using MovieBookings.Core.Exceptions;
 using MovieBookings.Core.Services;
 using MovieBookings.Data;
 
@@ -28,10 +29,10 @@ public class BookingServiceTest : IClassFixture<TestDatabaseFixture>, IDisposabl
         var context = Fixture.CreateContext();
         var user = await context.Users.FirstAsync();
         var show = await context.Shows.FirstAsync();
-        var seats = await context.Seats.Take(2).ToListAsync();
 
         var showSeats = context.ShowSeats
-            .Where(ss => ss.ShowId == show.Id && seats.Select(s => s.Id).Contains(ss.SeatId))
+            .Where(ss => ss.ShowId == show.Id)
+            .Take(2)
             .AsEnumerable()
             .Select(ss => { ss.Status = ShowSeatStatus.Booked; return ss; });
 
@@ -75,8 +76,7 @@ public class BookingServiceTest : IClassFixture<TestDatabaseFixture>, IDisposabl
         var context = Fixture.CreateContext();
         var user = await context.Users.FirstAsync();
         var show = await context.Shows.FirstAsync();
-        var seat = await context.Seats.Skip(2).Take(1).SingleAsync();
-        var showSeat = await context.ShowSeats.SingleAsync(ss => ss.ShowId == show.Id && ss.SeatId == seat.Id);
+        var showSeat = await context.ShowSeats.Where(ss => ss.ShowId == show.Id).Skip(2).Take(1).SingleAsync();
         showSeat.Status = ShowSeatStatus.Booked;
         var booking = context.Bookings.Add(new Booking
         {
@@ -93,48 +93,59 @@ public class BookingServiceTest : IClassFixture<TestDatabaseFixture>, IDisposabl
         bookings = await service.GetAllByUserIdAsync(user.Id);
         Assert.Empty(bookings);
 
-        var updatedShowSeat = await context.ShowSeats.SingleAsync(ss => ss.ShowId == show.Id && ss.SeatId == seat.Id);
+        var updatedShowSeat = await context.ShowSeats.SingleAsync(ss => ss.Id == showSeat.Id);
         Assert.Equal(ShowSeatStatus.Available, updatedShowSeat?.Status);
     }
 
     [Fact]
     public async void CreateBookingAsync_IfSeatsAreAvailable_CreateBooking()
     {
-        //var context = Fixture.CreateContext();
-        //var user = await context.Users.FirstAsync();
-        //var show = await context.Shows.FirstAsync();
-        //var seat = await context.Seats.Skip(3).SingleAsync();
+        var context = Fixture.CreateContext();
+        var user = await context.Users.FirstAsync();
+        var show = await context.Shows.FirstAsync();
+        var showSeat = await context.ShowSeats.FirstAsync();
 
-        //var service = new BookingService(context);
-        //var bookingRequest = new List<BookingRequest> { new BookingRequest(show.Id, seat.Id) };
-        //var booking = await service.CreateBookingAsync(user.Id, bookingRequest);
-        //Assert.NotNull(booking);
-        //Assert.Equal(user.Id, booking.UserId);
-        //Assert.Single(booking.BookedSeats);
-
-        //await service.DeleteAsync(booking.Id);
+        var service = new BookingService(context);
+        var bookingRequest = new List<BookingRequest> { new BookingRequest(show.Id, showSeat.Id) };
+        var booking = await service.CreateBookingAsync(user.Id, bookingRequest);
+        Assert.NotNull(booking);
+        Assert.Equal(user.Id, booking.UserId);
+        Assert.Single(booking.BookedSeats);
+        Assert.Equal(showSeat.Id, booking.BookedSeats[0].Id);
+        Assert.Equal(ShowSeatStatus.Booked, booking.BookedSeats[0].Status);
     }
 
     [Fact]
+    public async void CreateBookingAsync_IfSeatAlreadyBooked_ThrowsException()
+    {
+        var context = Fixture.CreateContext();
+        var user1 = await context.Users.FindAsync(1);
+        var user2 = await context.Users.FindAsync(2);
+        var show = await context.Shows.FirstAsync();
+        var bookedShowSeat = await context.ShowSeats.FirstAsync();
+
+        var service = new BookingService(context);
+        var bookingRequest1 = new List<BookingRequest> { new BookingRequest(show.Id, bookedShowSeat.Id) };
+        var booking1 = await service.CreateBookingAsync(user1.Id, bookingRequest1);
+
+        var bookingRequest2 = new List<BookingRequest> { new BookingRequest(show.Id, bookedShowSeat.Id) };
+        await Assert.ThrowsAsync<SeatAlreadyBookedException>(() => service.CreateBookingAsync(user2.Id, bookingRequest2));
+    }
+
+    [Fact(Skip = "NotImplemented")]
     public async void CreateBookingAsync_IfSeatsAreNotSpecified_ButAvailable_CreateBooking()
     {
-
+        
     }
 
-    [Fact]
+    [Fact(Skip = "NotImplemented")]
     public async void CreateBookingAsync_IfSomeSeatsAreSpecified_AndOtherNot_ButAvailable_CreateBooking()
     {
 
     }
 
-    [Fact]
+    [Fact(Skip = "NotImplemented")]
     public async void CreateBookingAsync_IfSeatsAreNotSpecified_AndNoAvailabilty_ThrowsException()
-    {
-
-    }
-
-    [Fact]
-    public async void CreateBookingAsync_IfSeatsAreAlreadyBooked_ThrowsException()
     {
 
     }

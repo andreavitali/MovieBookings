@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using MovieBookings.Core.Exceptions;
 using MovieBookings.Core.Interfaces;
 using MovieBookings.Data;
 
@@ -12,14 +13,50 @@ public class BookingService(ApplicationDbContext DbContext) : IBookingService
             .AsNoTracking()
             .Where(b => b.UserId == UserId)
             .Include(b => b.BookedSeats)
-                .ThenInclude(bs => bs.Seat)
             .Select(b => b.MapToBookingDTO())
             .ToListAsync();
     }
 
-    public Task<BookingResponse> CreateBookingAsync(int UserId, List<BookingRequest> bookings)
+    public async Task<BookingResponse> CreateBookingAsync(int UserId, List<BookingRequest> bookings)
     {
-        throw new NotImplementedException();
+        // Get requested seat
+        IQueryable<ShowSeat> selectedSeats = DbContext.ShowSeats
+            .Where(ss => bookings.Select(br => br.SeatId).Contains(ss.Id));
+
+        if (await selectedSeats.AnyAsync(ss => ss.Status == ShowSeatStatus.Booked))
+        {
+            throw new SeatAlreadyBookedException();
+        }
+
+        // Create booking
+        await selectedSeats.ForEachAsync(ss => ss.Status = ShowSeatStatus.Booked);
+        var booking = DbContext.Bookings.Add(new Booking
+        {
+            UserId = UserId,
+            BookedSeats = selectedSeats.ToList()
+        });
+
+        DbContext.SaveChanges();
+
+        // Return mapped booking
+        var newBooking = await DbContext.Bookings
+            .Include(b => b.BookedSeats)
+            .SingleAsync(b => b.Id == booking.Entity.Id);
+
+        return newBooking.MapToBookingDTO();
+
+        //using var transaction = await DbContext.Database.BeginTransactionAsync(System.Data.IsolationLevel.RepeatableRead);
+
+        //try
+        //{
+        //    await transaction.CommitAsync();
+        //    return null;
+        //}
+        //catch (Exception)
+        //{
+        //    await transaction.RollbackAsync();
+        //    throw;
+        //}        
     }
 
     public async Task DeleteAsync(int Id)
@@ -28,11 +65,9 @@ public class BookingService(ApplicationDbContext DbContext) : IBookingService
         var booking = await DbContext.Bookings.FindAsync(Id);
         if (booking is not null)
         {
-            //using var transaction = await DbContext.Database.BeginTransactionAsync();
             var bookedSeatsKeys = booking.BookedSeats.Select(bs => bs.Id).ToList();
 
             DbContext.Bookings.Remove(booking);
-            //await DbContext.SaveChangesAsync();
 
             // Restore show seats status
             var showSeatsToUpdate = await DbContext.ShowSeats
@@ -41,8 +76,6 @@ public class BookingService(ApplicationDbContext DbContext) : IBookingService
 
             showSeatsToUpdate.ForEach(ss => ss.Status = ShowSeatStatus.Available);
             await DbContext.SaveChangesAsync();
-
-            //await transaction.CommitAsync();
         }
     }
 }

@@ -26,21 +26,6 @@ namespace MovieBookings.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Seats",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    Row = table.Column<char>(type: "TEXT", nullable: false),
-                    Number = table.Column<int>(type: "INTEGER", nullable: false),
-                    Price = table.Column<double>(type: "REAL", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Seats", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Users",
                 columns: table => new
                 {
@@ -102,7 +87,8 @@ namespace MovieBookings.Data.Migrations
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     ShowId = table.Column<int>(type: "INTEGER", nullable: false),
-                    SeatId = table.Column<int>(type: "INTEGER", nullable: false),
+                    SeatNumber = table.Column<string>(type: "TEXT", nullable: false),
+                    Price = table.Column<double>(type: "REAL", nullable: false),
                     BookingId = table.Column<int>(type: "INTEGER", nullable: true),
                     Status = table.Column<int>(type: "INTEGER", nullable: false)
                 },
@@ -115,12 +101,6 @@ namespace MovieBookings.Data.Migrations
                         principalTable: "Bookings",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.SetNull);
-                    table.ForeignKey(
-                        name: "FK_ShowSeats_Seats_SeatId",
-                        column: x => x.SeatId,
-                        principalTable: "Seats",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_ShowSeats_Shows_ShowId",
                         column: x => x.ShowId,
@@ -145,14 +125,10 @@ namespace MovieBookings.Data.Migrations
                 column: "BookingId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ShowSeats_SeatId",
+                name: "IX_ShowSeats_ShowId_SeatNumber",
                 table: "ShowSeats",
-                column: "SeatId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_ShowSeats_ShowId",
-                table: "ShowSeats",
-                column: "ShowId");
+                columns: new[] { "ShowId", "SeatNumber" },
+                unique: true);
         }
 
         /// <inheritdoc />
@@ -163,9 +139,6 @@ namespace MovieBookings.Data.Migrations
 
             migrationBuilder.DropTable(
                 name: "Bookings");
-
-            migrationBuilder.DropTable(
-                name: "Seats");
 
             migrationBuilder.DropTable(
                 name: "Shows");

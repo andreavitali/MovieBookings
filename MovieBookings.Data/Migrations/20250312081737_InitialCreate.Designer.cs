@@ -11,7 +11,7 @@ using MovieBookings.Data;
 namespace MovieBookings.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250311223427_InitialCreate")]
+    [Migration("20250312081737_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -57,26 +57,6 @@ namespace MovieBookings.Data.Migrations
                     b.ToTable("Movies");
                 });
 
-            modelBuilder.Entity("MovieBookings.Data.Seat", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("Number")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<double>("Price")
-                        .HasColumnType("REAL");
-
-                    b.Property<char>("Row")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Seats");
-                });
-
             modelBuilder.Entity("MovieBookings.Data.Show", b =>
                 {
                     b.Property<int>("Id")
@@ -108,8 +88,12 @@ namespace MovieBookings.Data.Migrations
                     b.Property<int?>("BookingId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("SeatId")
-                        .HasColumnType("INTEGER");
+                    b.Property<double>("Price")
+                        .HasColumnType("REAL");
+
+                    b.Property<string>("SeatNumber")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
 
                     b.Property<int>("ShowId")
                         .HasColumnType("INTEGER");
@@ -121,9 +105,8 @@ namespace MovieBookings.Data.Migrations
 
                     b.HasIndex("BookingId");
 
-                    b.HasIndex("SeatId");
-
-                    b.HasIndex("ShowId");
+                    b.HasIndex("ShowId", "SeatNumber")
+                        .IsUnique();
 
                     b.ToTable("ShowSeats");
                 });
@@ -176,19 +159,11 @@ namespace MovieBookings.Data.Migrations
                         .HasForeignKey("BookingId")
                         .OnDelete(DeleteBehavior.SetNull);
 
-                    b.HasOne("MovieBookings.Data.Seat", "Seat")
-                        .WithMany()
-                        .HasForeignKey("SeatId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("MovieBookings.Data.Show", null)
                         .WithMany("Seats")
                         .HasForeignKey("ShowId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Seat");
                 });
 
             modelBuilder.Entity("MovieBookings.Data.Booking", b =>
