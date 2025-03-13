@@ -28,7 +28,7 @@ public class BookingServiceTest : IClassFixture<TestDatabaseFixture>, IDisposabl
     {
         var context = Fixture.CreateContext();
         var user = await context.Users.FirstAsync();
-        var show = await context.Shows.FirstAsync();
+        var show = await context.Shows.Include(s => s.Movie).FirstAsync();
 
         var showSeats = context.ShowSeats
             .Where(ss => ss.ShowId == show.Id)
@@ -57,7 +57,8 @@ public class BookingServiceTest : IClassFixture<TestDatabaseFixture>, IDisposabl
             Assert.Equal(2, b.BookedSeats.Count);
             Assert.All(b.BookedSeats, bs =>
             {
-                Assert.Equal(ShowSeatStatus.Booked, bs.Status);
+                Assert.Equal(show.StartAt, bs.StartAt);
+                Assert.Equivalent(show.Movie, bs.Movie);
             });
         });
     }
@@ -94,7 +95,7 @@ public class BookingServiceTest : IClassFixture<TestDatabaseFixture>, IDisposabl
         Assert.Empty(bookings);
 
         var updatedShowSeat = await context.ShowSeats.SingleAsync(ss => ss.Id == showSeat.Id);
-        Assert.Equal(ShowSeatStatus.Available, updatedShowSeat?.Status);
+        Assert.Equal(ShowSeatStatus.Available, updatedShowSeat.Status);
     }
 
     [Fact]
@@ -102,17 +103,21 @@ public class BookingServiceTest : IClassFixture<TestDatabaseFixture>, IDisposabl
     {
         var context = Fixture.CreateContext();
         var user = await context.Users.FirstAsync();
-        var show = await context.Shows.FirstAsync();
-        var showSeat = await context.ShowSeats.FirstAsync();
+        var shows = await context.Shows.Take(2).ToListAsync();
+        var showSeat1 = await context.ShowSeats.FirstAsync(ss => ss.ShowId == shows[0].Id);
+        var showSeat2 = await context.ShowSeats.FirstAsync(ss => ss.ShowId == shows[1].Id);
 
         var service = new BookingService(context);
-        var bookingRequest = new List<BookingRequest> { new BookingRequest(show.Id, showSeat.Id) };
+        var bookingRequest = new List<BookingRequest> { 
+            new BookingRequest(showSeat1.ShowId, showSeat1.Id),
+            new BookingRequest(showSeat2.ShowId, showSeat2.Id)
+        };
         var booking = await service.CreateBookingAsync(user.Id, bookingRequest);
         Assert.NotNull(booking);
         Assert.Equal(user.Id, booking.UserId);
-        Assert.Single(booking.BookedSeats);
-        Assert.Equal(showSeat.Id, booking.BookedSeats[0].Id);
-        Assert.Equal(ShowSeatStatus.Booked, booking.BookedSeats[0].Status);
+        Assert.Equal(2, booking.BookedSeats.Count);
+        Assert.Single(booking.BookedSeats, bs => bs.Id == showSeat1.Id);
+        Assert.Single(booking.BookedSeats, bs => bs.Id == showSeat2.Id);
     }
 
     [Fact]

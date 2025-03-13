@@ -13,6 +13,8 @@ public class BookingService(ApplicationDbContext DbContext) : IBookingService
             .AsNoTracking()
             .Where(b => b.UserId == UserId)
             .Include(b => b.BookedSeats)
+                .ThenInclude(bs => bs.Show)
+                    .ThenInclude(s => s.Movie)
             .Select(b => b.MapToBookingDTO())
             .ToListAsync();
     }
@@ -25,7 +27,7 @@ public class BookingService(ApplicationDbContext DbContext) : IBookingService
 
         if (await selectedSeats.AnyAsync(ss => ss.Status == ShowSeatStatus.Booked))
         {
-            throw new SeatAlreadyBookedException();
+            throw new SeatAlreadyBookedException("One ore more seats are already booked");
         }
 
         // Create booking
@@ -41,6 +43,8 @@ public class BookingService(ApplicationDbContext DbContext) : IBookingService
         // Return mapped booking
         var newBooking = await DbContext.Bookings
             .Include(b => b.BookedSeats)
+                .ThenInclude(bs => bs.Show)
+                    .ThenInclude(s => s.Movie)
             .SingleAsync(b => b.Id == booking.Entity.Id);
 
         return newBooking.MapToBookingDTO();
@@ -62,7 +66,10 @@ public class BookingService(ApplicationDbContext DbContext) : IBookingService
     public async Task DeleteAsync(int Id)
     {
         // Delete booking
-        var booking = await DbContext.Bookings.FindAsync(Id);
+        var booking = await DbContext.Bookings
+            .Include(b => b.BookedSeats)
+            .SingleOrDefaultAsync(b => b.Id == Id);
+
         if (booking is not null)
         {
             var bookedSeatsKeys = booking.BookedSeats.Select(bs => bs.Id).ToList();

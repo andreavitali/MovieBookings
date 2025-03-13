@@ -2,22 +2,21 @@
 
 ## Features
 - NET 8.0
+- MinimalAPI
 - EntityFramework with SQLite provider
+
+## Database schema
+This is a diagram of the database schema:
+
+![Database schema](database_schema.png)
+
+For the sake of simplicity there is only one theatre with an hardcoded seats configuration.
 
 ## Missing features or improvements
 - TODO
 
 ## Usage
-
-First migration:
-dotnet ef migrations add InitialCreate --project .\MovieBookings.Data\ --startup-project .\MovieBookings.API\
-
-Install dotnet ef CLI:
-```
-dotnet tool install --global dotnet-ef
-```
-
-The database file is already in the repository with seeded data.
+The database file is already in the repository with seeded data
 If you want to create a new database file delete the MovieBookings.db and, from the project root folder, run:
 ```
 dotnet ef database update --startup-project .\MovieBookings.API\

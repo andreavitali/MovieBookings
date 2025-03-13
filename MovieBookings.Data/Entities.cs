@@ -33,6 +33,7 @@ public class ShowSeat
 {
     public int Id { get; set; }
     public int ShowId { get; set; }
+    public Show Show { get; set;} = null!;
     public string SeatNumber { get; set; }
     public double Price { get; set; }
     public int? BookingId { get; set; }

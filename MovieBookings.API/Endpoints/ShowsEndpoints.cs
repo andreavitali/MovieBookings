@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http.HttpResults;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using MovieBookings.Core;
 using MovieBookings.Core.Interfaces;
@@ -28,7 +29,6 @@ public static class ShowsEndpoints
             var show = await showService.GetByIdAsync(id);
             return show is null ? TypedResults.NotFound() : TypedResults.Ok(show);
         })
-        .ProducesValidationProblem()
         .ProducesProblem(StatusCodes.Status404NotFound)
         .WithTags("Shows")
         .WithSummary("Get a specific show")
