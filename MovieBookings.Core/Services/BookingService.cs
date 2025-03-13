@@ -21,21 +21,45 @@ public class BookingService(ApplicationDbContext DbContext) : IBookingService
 
     public async Task<BookingResponse> CreateBookingAsync(int UserId, List<BookingRequest> bookings)
     {
-        // Get requested seat
-        IQueryable<ShowSeat> selectedSeats = DbContext.ShowSeats
-            .Where(ss => bookings.Select(br => br.SeatId).Contains(ss.Id));
+        // Get specified seats
+        var selectedSeatIds = bookings.Where(br => br.SeatId != null).Select(br => br.SeatId).ToList();
 
-        if (await selectedSeats.AnyAsync(ss => ss.Status == ShowSeatStatus.Booked))
+        IQueryable<ShowSeat> selectedSeatsQuery = DbContext.ShowSeats
+            .Where(ss => selectedSeatIds.Contains(ss.Id));
+
+        // Get unspecified seats
+        Dictionary<int, int> unspecifedSeatsPerShow = bookings
+            .Where(br => br.SeatId == null)
+            .GroupBy(br => br.ShowId.Value)
+            .ToDictionary(br => br.Key, br => br.Count());
+
+        foreach (var seatGroup in unspecifedSeatsPerShow)
+        {
+            // Get first N available seats for each show
+            var unspecifiedSeats = DbContext.ShowSeats
+                .Where(ss => !selectedSeatIds.Contains(ss.Id))
+                .Where(ss => ss.ShowId == seatGroup.Key)
+                .Where(ss => ss.Status == ShowSeatStatus.Available)
+                .Take(seatGroup.Value);
+
+            selectedSeatsQuery = selectedSeatsQuery.Union(unspecifiedSeats);
+        }
+
+        // Check availability
+        var selectedSeats = await selectedSeatsQuery.AsNoTracking().ToListAsync();
+
+        if (selectedSeats.Count != bookings.Count || selectedSeats.Any(ss => ss.Status == ShowSeatStatus.Booked))
         {
             throw new SeatAlreadyBookedException("One ore more seats are already booked");
         }
 
         // Create booking
-        await selectedSeats.ForEachAsync(ss => ss.Status = ShowSeatStatus.Booked);
+        await selectedSeatsQuery.ForEachAsync(ss => ss.Status = ShowSeatStatus.Booked);
         var booking = DbContext.Bookings.Add(new Booking
         {
             UserId = UserId,
-            BookedSeats = selectedSeats.ToList()
+            TotalPrice = selectedSeats.Sum(ss => ss.Price),
+            BookedSeats = selectedSeatsQuery.ToList()
         });
 
         DbContext.SaveChanges();
@@ -47,20 +71,7 @@ public class BookingService(ApplicationDbContext DbContext) : IBookingService
                     .ThenInclude(s => s.Movie)
             .SingleAsync(b => b.Id == booking.Entity.Id);
 
-        return newBooking.MapToBookingDTO();
-
-        //using var transaction = await DbContext.Database.BeginTransactionAsync(System.Data.IsolationLevel.RepeatableRead);
-
-        //try
-        //{
-        //    await transaction.CommitAsync();
-        //    return null;
-        //}
-        //catch (Exception)
-        //{
-        //    await transaction.RollbackAsync();
-        //    throw;
-        //}        
+        return newBooking.MapToBookingDTO();    
     }
 
     public async Task DeleteAsync(int Id)

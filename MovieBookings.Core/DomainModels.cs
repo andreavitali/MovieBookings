@@ -8,7 +8,7 @@ public record BookedSeat(int Id, Movie Movie, string SeatNumber, DateTime StartA
 
 public record ShowResponse(int Id, Movie Movie, DateTime StartAt, List<Seat> Seats);
 public record BookingResponse(int Id, int UserId, double TotalPrice, List<BookedSeat> BookedSeats);
-public record BookingRequest(int ShowId, int? SeatId);
+public record BookingRequest(int? ShowId, int? SeatId);
 
 public static class DTOMapping
 {

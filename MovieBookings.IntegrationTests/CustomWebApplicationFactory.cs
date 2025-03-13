@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,13 +16,9 @@ namespace MovieBookings.IntegrationTests
 {
     public class CustomWebApplicationFactory<TProgram> : WebApplicationFactory<TProgram>, IAsyncLifetime where TProgram : class
     {
-        protected readonly HttpClient Client;
-        protected IServiceProvider ServiceProvider { get; private set; }
-
         public async Task InitializeAsync()
         {
-            this.ServiceProvider = this.Services;
-            using var scope = ServiceProvider.CreateScope();
+            using var scope = this.Services.CreateScope();
             var context = scope.ServiceProvider.GetService<ApplicationDbContext>();
             context.Database.EnsureDeleted();
             context.Database.EnsureCreated();
@@ -30,9 +27,9 @@ namespace MovieBookings.IntegrationTests
 
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
-            builder.ConfigureServices(services =>
+            builder.ConfigureTestServices(services =>
             {
-                var dbContextDescriptor = services.SingleOrDefault(d => d.ServiceType == 
+                var dbContextDescriptor = services.SingleOrDefault(d => d.ServiceType ==
                     typeof(DbContextOptions<ApplicationDbContext>));
                 services.Remove(dbContextDescriptor);
 
@@ -55,6 +52,8 @@ namespace MovieBookings.IntegrationTests
                         .UseSeeding((context, _) => DatabaseSeeder.SeedUnitTestData(context as ApplicationDbContext));
                 });
             });
+
+            builder.UseEnvironment("Development");
         }
 
         Task IAsyncLifetime.DisposeAsync()
