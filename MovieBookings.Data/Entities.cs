@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.ComponentModel;
+using System.Text.Json.Serialization;
 
 namespace MovieBookings.Data;
 
@@ -6,6 +7,7 @@ public class Movie
 {
     public int Id { get; set; }
     public string Title { get; set; }
+    [Description("Duration in minutes")]
     public int Duration { get; set; }
 
     //public ICollection<Show> Shows { get; set; } = new List<Show>();

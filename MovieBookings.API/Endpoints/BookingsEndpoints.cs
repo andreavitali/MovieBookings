@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using MovieBookings.Core;
 using MovieBookings.Core.Exceptions;
 using MovieBookings.Core.Interfaces;
+using System.ComponentModel;
 
 namespace MovieBookings.API.Endpoints;
 
@@ -38,8 +39,9 @@ public static class BookingsEndpoints
                 return TypedResults.Problem(ex.Message, statusCode: StatusCodes.Status409Conflict);
             }
         })
-        .WithSummary("Get a specific show")
-        .WithDescription("Gets the show with the specified ID.");
+        .WithTags("Bookings")
+        .WithSummary("Create a booking for a user")
+        .WithDescription("Book one or multiple seats in one or multiple shows.");
 
         group.MapDelete("/{id}", async Task<NoContent> (
             [FromRoute] int id,
@@ -48,6 +50,7 @@ public static class BookingsEndpoints
             await bookingService.DeleteAsync(id);
             return TypedResults.NoContent();
         })
+        .WithTags("Bookings")
         .WithSummary("Delete a booking")
         .WithDescription("Delete the booking with the specified ID.");
     }

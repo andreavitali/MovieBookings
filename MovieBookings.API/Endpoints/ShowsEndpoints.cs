@@ -18,6 +18,11 @@ public static class ShowsEndpoints
             var shows = await showService.GetAllAsync();
             return TypedResults.Ok(shows);
         })
+        .WithOpenApi(op =>
+        {
+            op.Responses["200"].Description = "All the shows available with seats details.";
+            return op;
+        })
         .WithTags("Shows")
         .WithSummary("Get all shows")
         .WithDescription("Gets all shows available with seats details.");
