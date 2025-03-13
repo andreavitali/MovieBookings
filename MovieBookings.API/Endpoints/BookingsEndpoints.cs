@@ -3,8 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using MovieBookings.Core;
 using MovieBookings.Core.Exceptions;
 using MovieBookings.Core.Interfaces;
-using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
 
 namespace MovieBookings.API.Endpoints;
 
@@ -58,7 +56,10 @@ public static class BookingsEndpoints
         .ProducesProblem(StatusCodes.Status409Conflict)
         .WithTags("Bookings")
         .WithSummary("Create a booking for a user")
-        .WithDescription("Book one or multiple seats in one or multiple shows.");
+        .WithDescription("""
+            Book one or multiple seats in one or multiple shows.  
+            The request body should contain a list of BookingRequest objects, each one containing a showId (seat selected random if available) or a seatId (specific seat of a specific show).
+            """);
 
         group.MapDelete("/{id}", async Task<NoContent> (
             [FromRoute] int id,

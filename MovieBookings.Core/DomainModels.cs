@@ -1,14 +1,17 @@
 ﻿using MovieBookings.Data;
-using System.ComponentModel.DataAnnotations;
-
+using System.ComponentModel;
 namespace MovieBookings.Core;
 
 public record Seat(int Id, string SeatNumber, double Price, ShowSeatStatus Status);
+
 public record BookedSeat(int Id, Movie Movie, string SeatNumber, DateTime StartAt, double Price);
 
 public record ShowResponse(int Id, Movie Movie, DateTime StartAt, List<Seat> Seats);
 public record BookingResponse(int Id, int UserId, double TotalPrice, List<BookedSeat> BookedSeats);
-public record BookingRequest(int? ShowId, int? SeatId);
+public record BookingRequest(
+    [property:Description("Id of a show for which to get a random seat")] int? ShowId,
+    [property:Description("Id of a specific seat for a show")] int? SeatId
+);
 
 public static class DTOMapping
 {
@@ -18,9 +21,7 @@ public static class DTOMapping
             showEntity.Id,
             showEntity.Movie,
             showEntity.StartAt,
-            showEntity.Seats
-                .Select(s => new Seat(s.Id, s.SeatNumber, s.Price, s.Status))
-                .ToList()
+            showEntity.Seats.Select(s => new Seat(s.Id, s.SeatNumber, s.Price, s.Status)).ToList()
         );
     }
 
@@ -30,9 +31,7 @@ public static class DTOMapping
             bookingEntity.Id,
             bookingEntity.UserId,
             bookingEntity.TotalPrice,
-            bookingEntity.BookedSeats
-                .Select(s => new BookedSeat(s.Id, s.Show.Movie, s.SeatNumber, s.Show.StartAt, s.Price))
-                .ToList()
+            bookingEntity.BookedSeats.Select(s => new BookedSeat(s.Id, s.Show.Movie, s.SeatNumber, s.Show.StartAt, s.Price)).ToList()
         );
     }
 }
