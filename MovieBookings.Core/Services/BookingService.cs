@@ -50,7 +50,7 @@ public class BookingService(ApplicationDbContext DbContext) : IBookingService
 
         if (selectedSeats.Count != bookings.Count || selectedSeats.Any(ss => ss.Status == ShowSeatStatus.Booked))
         {
-            throw new SeatAlreadyBookedException("One ore more seats are already booked");
+            throw new SeatAlreadyBookedException();
         }
 
         // Create booking

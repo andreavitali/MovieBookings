@@ -52,7 +52,6 @@ namespace MovieBookings.Data
 
         public static void SeedUnitTestData(ApplicationDbContext context)
         {
-            // Seats
             List<SeatData> availableSeats = GenerateSeatData(2, 2);
 
             context.Movies.Add(new Movie { Id = 1, Title = "Parasite", Duration = 132 });

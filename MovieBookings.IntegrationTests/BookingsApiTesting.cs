@@ -37,17 +37,6 @@ namespace MovieBookings.IntegrationTests
             Assert.Equal(seatShow.Id, booking.BookedSeats[0].Id);
         }
 
-        [Fact(Skip = "Model validation required")]
-        public async Task CreateBooking_IfSeatIdIsNull_ShouldReturn400()
-        {  
-            var showId = 1;
-            var userId = 1;
-            var request = new List<BookingRequest> { new BookingRequest(showId, null) };
-
-            var response = await _httpClient.PostAsJsonAsync($"/api/bookings?userId={userId}", request);
-            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-        }
-
         [Fact]
         public async Task CreateBooking_IfSeatsNotAvailable_ShouldReturn409()
         {   

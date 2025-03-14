@@ -8,14 +8,9 @@ namespace MovieBookings.Core.Exceptions
 {
     public class SeatAlreadyBookedException : Exception
     {
-        public SeatAlreadyBookedException()
+        public SeatAlreadyBookedException() : base("One ore more seats are already booked")
         {
                 
-        }
-
-        public SeatAlreadyBookedException(string message) : base(message)
-        {
-
         }
     }
 }

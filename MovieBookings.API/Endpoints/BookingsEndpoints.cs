@@ -8,9 +8,6 @@ namespace MovieBookings.API.Endpoints;
 
 public static class BookingsEndpoints
 {
-    private static string AT_LEAST_ONE_BOOKING_REQUEST_ERROR = "Add at least one BookingRequest";
-    private static string NO_IDS_IN_BOOKING_REQUEST_ERROR = "At least one between seatId and showId should be not null";
-
     public static void MapBookingsEndpoints(this IEndpointRouteBuilder builder)
     {
         var group = builder.MapGroup("/api/bookings");
@@ -31,8 +28,8 @@ public static class BookingsEndpoints
             [FromBody] List<BookingRequest> bookings,
             [FromServices] IBookingService bookingService) =>
         {
-            // Validation
-            if(bookings.Count == 0)
+            // Validation (should be done with a 3rd party library!)
+            if (bookings.Count == 0)
             {
                 return TypedResults.Problem("Add at least one BookingRequest", statusCode: StatusCodes.Status400BadRequest);
             }
@@ -54,6 +51,13 @@ public static class BookingsEndpoints
         })
         .ProducesProblem(StatusCodes.Status400BadRequest)
         .ProducesProblem(StatusCodes.Status409Conflict)
+        .WithOpenApi(op =>
+        {
+            op.Responses["200"].Description = "Created booking with all the seats reserved";
+            op.Responses["400"].Description = "Model validation error";
+            op.Responses["409"].Description = "One ore more seats are already booked";
+            return op;
+        })
         .WithTags("Bookings")
         .WithSummary("Create a booking for a user")
         .WithDescription("""

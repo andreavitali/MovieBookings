@@ -4,14 +4,24 @@ namespace MovieBookings.Core;
 
 public record Seat(int Id, string SeatNumber, double Price, ShowSeatStatus Status);
 
-public record BookedSeat(int Id, Movie Movie, string SeatNumber, DateTime StartAt, double Price);
+public record BookedSeat(
+    [property: Description("Unique Id of the seat for that show")] int Id,
+    [property: Description("Details of the movie")] Movie Movie,
+    [property: Description("Seat identifier in the theatre")] string SeatNumber,
+    [property: Description("Show starting date and time")] DateTime StartAt, 
+    [property: Description("Price of the seat for the show")] double Price);
 
 public record ShowResponse(int Id, Movie Movie, DateTime StartAt, List<Seat> Seats);
-public record BookingResponse(int Id, int UserId, double TotalPrice, List<BookedSeat> BookedSeats);
+
+public record BookingResponse(
+    [property: Description("Unique Id of the booking")] int Id,
+    [property: Description("Id of the user that completed the booking")] int UserId,
+    [property: Description("Total booking price (sum of the price of each seat)")] double TotalPrice,
+    [property: Description("Details of each seat booked")] List<BookedSeat> BookedSeats);
+
 public record BookingRequest(
     [property:Description("Id of a show for which to get a random seat")] int? ShowId,
-    [property:Description("Id of a specific seat for a show")] int? SeatId
-);
+    [property:Description("Id of a specific seat for a show")] int? SeatId);
 
 public static class DTOMapping
 {
