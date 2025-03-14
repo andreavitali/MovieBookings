@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using BCrypt.Net;
+using Microsoft.EntityFrameworkCore;
 using System.Linq;
 
 namespace MovieBookings.Data
@@ -45,7 +46,9 @@ namespace MovieBookings.Data
             context.Set<ShowSeat>().AddRange(showSeats);
 
             // Users
-            context.Set<User>().Add(new User { Id = 1, Email = "andrea@email.com", Name = "Andrea" });
+            var defaultUser = new User { Id = 1, Email = "andrea@email.com", Name = "Andrea" };
+            defaultUser.Password = BCrypt.Net.BCrypt.HashPassword("password");
+            context.Set<User>().Add(defaultUser);
 
             context.SaveChanges();
         }
@@ -68,8 +71,8 @@ namespace MovieBookings.Data
 
             context.ShowSeats.AddRange(showSeats);
 
-            context.Users.Add(new User { Id = 1, Email = "andrea.test@email.com", Name = "Andrea Test" });
-            context.Users.Add(new User { Id = 2, Email = "pippo@email.com", Name = "Pippo" });
+            context.Users.Add(new User { Id = 1, Email = "andrea.test@email.com", Name = "Andrea Test", Password = BCrypt.Net.BCrypt.HashPassword("password") });
+            context.Users.Add(new User { Id = 2, Email = "pippo@email.com", Name = "Pippo", Password = BCrypt.Net.BCrypt.HashPassword("password") });
 
             context.SaveChanges();
         }

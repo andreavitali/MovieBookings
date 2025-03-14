@@ -1,8 +1,10 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using MovieBookings.API.Endpoints;
-using MovieBookings.Core.Interfaces;
-using MovieBookings.Core.Services;
+using MovieBookings.API.Extensions;
 using MovieBookings.Data;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,9 +25,24 @@ builder.Services.AddDbContext<ApplicationDbContext>(
         .UseSeeding((context, _) => DatabaseSeeder.SeedData(context))
 );
 
-// Add my services
-builder.Services.AddScoped<IShowService, ShowService>();
-builder.Services.AddScoped<IBookingService, BookingService>();
+// Add JWT Authentication
+builder.Services.AddAuthorization();
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(o =>
+    {
+        o.RequireHttpsMetadata = false;
+        o.TokenValidationParameters = new TokenValidationParameters
+        {
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:SecretKey"])),
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            ClockSkew = TimeSpan.Zero
+        };
+    });
+
+// Add from extensions
+builder.Services.AddDomainServices();
+builder.Services.AddSwaggerGenWithAuth();
 
 var app = builder.Build();
 
@@ -41,10 +58,12 @@ app.UseHttpsRedirection();
 app.UseStatusCodePages();
 app.UseExceptionHandler();
 
-//app.UseAuthorization();
-//app.UseAuthentication();
+// Authentication
+app.UseAuthentication();
+app.UseAuthorization();
 
 // Add MinimalAPI endpoints
+app.MapAuthEndpoints();
 app.MapShowsEndpoints();
 app.MapBookingsEndpoints();
 

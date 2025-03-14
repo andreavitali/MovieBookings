@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System.Reflection;
 
 namespace MovieBookings.Data;
 
@@ -18,6 +17,7 @@ public class ApplicationDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        // These should be moved into classes extending IEntityTypeConfiguration<TEntity>
         modelBuilder.Entity<ShowSeat>()
             .Property(ss => ss.Status)
             .HasConversion<int>();
@@ -30,5 +30,9 @@ public class ApplicationDbContext : DbContext
             .HasMany(b => b.BookedSeats)
             .WithOne()
             .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<User>()
+            .HasIndex(u => u.Email)
+            .IsUnique();
     }
 }

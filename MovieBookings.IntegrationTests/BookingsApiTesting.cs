@@ -56,11 +56,19 @@ namespace MovieBookings.IntegrationTests
             Assert.Equal("One ore more seats are already booked", bookingError.Detail);
         }
 
-        [Fact(Skip = "JWT")]
-        public async Task GetAllBookings_ForUnauthenticatedUser_ShouldReturn_Forbidden()
+        [Fact]
+        public async Task GetAllBookings_ForUnauthenticatedUser_ShouldReturn_Unauthorized()
         {
             var response = await _httpClient.GetAsync($"/api/bookings");
-            Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task CreateBooking_ForUnauthenticatedUser_ShouldReturn_Unauthorized()
+        {
+            var request = new List<BookingRequest> { new BookingRequest(1, 1) };
+            var response = await _httpClient.PostAsJsonAsync($"/api/bookings", request);
+            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
         }
     }
 }

@@ -10,7 +10,9 @@ public static class BookingsEndpoints
 {
     public static void MapBookingsEndpoints(this IEndpointRouteBuilder builder)
     {
-        var group = builder.MapGroup("/api/bookings");
+        var group = builder.MapGroup("/api/bookings")
+            .WithTags("Bookings")
+            .WithOpenApi();
 
         group.MapGet("/", async Task<Ok<List<BookingResponse>>> (
             [FromQuery] int userId,
@@ -19,7 +21,7 @@ public static class BookingsEndpoints
             var bookings = await bookingService.GetAllByUserIdAsync(userId);
             return TypedResults.Ok(bookings);
         })
-        .WithTags("Bookings")
+        .RequireAuthorization()
         .WithSummary("Get all bookings for a user")
         .WithDescription("Gets all bookings for a specific user.");
 
@@ -49,6 +51,7 @@ public static class BookingsEndpoints
                 return TypedResults.Problem(ex.Message, statusCode: StatusCodes.Status409Conflict);
             }
         })
+        .RequireAuthorization()
         .ProducesProblem(StatusCodes.Status400BadRequest)
         .ProducesProblem(StatusCodes.Status409Conflict)
         .WithOpenApi(op =>
@@ -58,7 +61,6 @@ public static class BookingsEndpoints
             op.Responses["409"].Description = "One ore more seats are already booked";
             return op;
         })
-        .WithTags("Bookings")
         .WithSummary("Create a booking for a user")
         .WithDescription("""
             Book one or multiple seats in one or multiple shows.  
@@ -72,7 +74,6 @@ public static class BookingsEndpoints
             await bookingService.DeleteAsync(id);
             return TypedResults.NoContent();
         })
-        .WithTags("Bookings")
         .WithSummary("Delete a booking")
         .WithDescription("Delete the booking with the specified ID.");
     }
