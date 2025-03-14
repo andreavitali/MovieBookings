@@ -30,7 +30,7 @@ namespace MovieBookings.UnitTests
 
             if (context.Database.EnsureCreated())
             {
-                DatabaseSeeder.SeedUnitTestData(context);
+                DatabaseSeeder.SeedTestData(context);
             }
         }
 

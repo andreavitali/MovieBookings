@@ -5,6 +5,7 @@ namespace MovieBookings.Core;
 // Auth
 public record LoginRequest(string Email, string Password);
 public record CreateUserRequest(string Email, string Name, string Password);
+public record TokenResponse(string Token);
 
 // Shows
 public record ShowResponse(int Id, Movie Movie, DateTime StartAt, List<Seat> Seats);

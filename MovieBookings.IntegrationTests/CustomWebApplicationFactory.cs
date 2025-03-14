@@ -4,13 +4,10 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using MovieBookings.Core;
 using MovieBookings.Data;
-using System;
-using System.Collections.Generic;
 using System.Data.Common;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Net.Http.Json;
 
 namespace MovieBookings.IntegrationTests
 {
@@ -23,6 +20,13 @@ namespace MovieBookings.IntegrationTests
             context.Database.EnsureDeleted();
             context.Database.EnsureCreated();
             await Task.CompletedTask;
+        }
+
+        public async Task<string> GetTokenForUser(HttpClient client, User user)
+        {
+            var tokenResponse = await client.PostAsJsonAsync("/api/auth/login", new LoginRequest(user.Email, "password"));
+            var tokenResult = await tokenResponse.Content.ReadFromJsonAsync<TokenResponse>();
+            return tokenResult.Token;
         }
 
         protected override void ConfigureWebHost(IWebHostBuilder builder)
@@ -49,7 +53,7 @@ namespace MovieBookings.IntegrationTests
                     var connection = container.GetRequiredService<DbConnection>();
                     options
                         .UseSqlite(connection)
-                        .UseSeeding((context, _) => DatabaseSeeder.SeedUnitTestData(context as ApplicationDbContext));
+                        .UseSeeding((context, _) => DatabaseSeeder.SeedTestData(context as ApplicationDbContext));
                 });
             });
 

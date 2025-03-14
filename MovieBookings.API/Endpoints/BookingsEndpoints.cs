@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using MovieBookings.Core;
 using MovieBookings.Core.Exceptions;
 using MovieBookings.Core.Interfaces;
+using System.IdentityModel;
+using System.Security.Claims;
 
 namespace MovieBookings.API.Endpoints;
 
@@ -15,9 +17,10 @@ public static class BookingsEndpoints
             .WithOpenApi();
 
         group.MapGet("/", async Task<Ok<List<BookingResponse>>> (
-            [FromQuery] int userId,
+            HttpContext context,
             [FromServices] IBookingService bookingService) =>
         {
+            var userId = int.Parse(context.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value);
             var bookings = await bookingService.GetAllByUserIdAsync(userId);
             return TypedResults.Ok(bookings);
         })
@@ -26,7 +29,7 @@ public static class BookingsEndpoints
         .WithDescription("Gets all bookings for a specific user.");
 
         group.MapPost("/", async Task<Results<Ok<BookingResponse>, ProblemHttpResult>> (
-            [FromQuery] int userId,
+            HttpContext context,
             [FromBody] List<BookingRequest> bookings,
             [FromServices] IBookingService bookingService) =>
         {
@@ -41,9 +44,11 @@ public static class BookingsEndpoints
                 return TypedResults.Problem("At least one between seatId and showId should be defined", statusCode: StatusCodes.Status400BadRequest);
             }
 
+            var userId = int.Parse(context.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value);
+
             try
             {
-                var booking = await bookingService.CreateBookingAsync(userId, bookings);
+                var booking = await bookingService.CreateBookingAsync(1, bookings);
                 return TypedResults.Ok(booking);
             }
             catch (SeatAlreadyBookedException ex)
@@ -67,13 +72,24 @@ public static class BookingsEndpoints
             The request body should contain a list of BookingRequest objects, each one containing a showId (seat selected random if available) or a seatId (specific seat of a specific show).
             """);
 
-        group.MapDelete("/{id}", async Task<NoContent> (
+        group.MapDelete("/{id}", async Task<Results<ForbidHttpResult,NoContent>> (
+            HttpContext context,
             [FromRoute] int id,
             [FromServices] IBookingService bookingService) =>
         {
+            var userId = int.Parse(context.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value);
+
+            var booking = await bookingService.GetByIdAsync(id);
+            if(booking?.UserId != userId)
+            {
+                return TypedResults.Forbid();
+            }
+
             await bookingService.DeleteAsync(id);
             return TypedResults.NoContent();
         })
+        .RequireAuthorization()
+        .ProducesProblem(StatusCodes.Status403Forbidden)
         .WithSummary("Delete a booking")
         .WithDescription("Delete the booking with the specified ID.");
     }

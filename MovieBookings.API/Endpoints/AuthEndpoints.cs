@@ -4,6 +4,7 @@ using Microsoft.OpenApi.Any;
 using MovieBookings.Core;
 using MovieBookings.Core.Interfaces;
 using MovieBookings.Data;
+using System.Text.Json;
 
 namespace MovieBookings.API.Endpoints;
 
@@ -16,28 +17,33 @@ public static class AuthEndpoints
             .WithTags("Auth")
             .WithOpenApi();
 
-        group.MapPost("/login", async Task<Results<ContentHttpResult, ProblemHttpResult>> (
+        group.MapPost("/login", async Task<Results<Ok<TokenResponse>, ProblemHttpResult>> (
             [FromBody] LoginRequest loginRequest,
             [FromServices] IAuthService authService) =>
         {
             try
             {
-                var token = await authService.Login(loginRequest.Email, loginRequest.Password);
-                return TypedResults.Text(token);
+                var tokenResponse = await authService.Login(loginRequest.Email, loginRequest.Password);
+                return TypedResults.Ok(tokenResponse);
             }
             catch (Exception ex)
             {
                 return TypedResults.Problem(ex.Message, statusCode: StatusCodes.Status401Unauthorized);
             }
         })
-        .Produces<string>(contentType: "text/plain")
         .ProducesProblem(StatusCodes.Status401Unauthorized)
         .WithSummary("Login user")
         .WithDescription("Login using email and password")
         .WithOpenApi(op =>
         {
+            op.RequestBody.Content["application/json"].Example = new OpenApiObject
+            {
+                ["email"] = new OpenApiString("andrea@email.com"),
+                ["password"] = new OpenApiString("password")
+            };
             var response200 = op.Responses["200"];
-            response200.Content["text/plain"].Example = new OpenApiString("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwibmFtZSI6IkFuZHJlYSIsImVtYWlsIjoiYW5kcmVhQGVtYWlsLmNvbSIsImF1ZCI6Ik1vdmllQm9va2luZ3MuQVBJIiwiaXNzIjoiTW92aWVCb29raW5ncyIsImV4cCI6MTc0MTk1MzE1MywiaWF0IjoxNzQxOTUyNTUzLCJuYmYiOjE3NDE5NTI1NTN9.cj3VtbVAdhykwimqRv7QcRueU1h2jZfJe88h4TAsS3E");
+            response200.Content["application/json"].Example = new OpenApiString(
+                JsonSerializer.Serialize(new { token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwibmFtZSI6IkFuZHJlYSIsImVtYWlsIjoiYW5kcmVhQGVtYWlsLmNvbSIsImF1ZCI6Ik1vdmllQm9va2luZ3MuQVBJIiwiaXNzIjoiTW92aWVCb29raW5ncyIsImV4cCI6MTc0MTk1MzE1MywiaWF0IjoxNzQxOTUyNTUzLCJuYmYiOjE3NDE5NTI1NTN9.cj3VtbVAdhykwimqRv7QcRueU1h2jZfJe88h4TAsS3E" }));
             response200.Description = "JWT Token";
             return op;
         });

@@ -53,7 +53,7 @@ namespace MovieBookings.Data
             context.SaveChanges();
         }
 
-        public static void SeedUnitTestData(ApplicationDbContext context)
+        public static void SeedTestData(ApplicationDbContext context)
         {
             List<SeatData> availableSeats = GenerateSeatData(2, 2);
 
@@ -71,10 +71,18 @@ namespace MovieBookings.Data
 
             context.ShowSeats.AddRange(showSeats);
 
-            context.Users.Add(new User { Id = 1, Email = "andrea.test@email.com", Name = "Andrea Test", Password = BCrypt.Net.BCrypt.HashPassword("password") });
-            context.Users.Add(new User { Id = 2, Email = "pippo@email.com", Name = "Pippo", Password = BCrypt.Net.BCrypt.HashPassword("password") });
+            context.Users.AddRange(GetTestUsers());
 
             context.SaveChanges();
+        }
+
+        public static IEnumerable<User> GetTestUsers()
+        {
+            return new List<User>
+            {
+                new User { Id = 1, Email = "andrea.test@email.com", Name = "Andrea Test", Password = BCrypt.Net.BCrypt.HashPassword("password") },
+                new User { Id = 2, Email = "pippo@email.com", Name = "Pippo", Password = BCrypt.Net.BCrypt.HashPassword("password") }
+            };
         }
     }
 }

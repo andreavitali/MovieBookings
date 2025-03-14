@@ -6,7 +6,7 @@ namespace MovieBookings.Core.Services;
 
 public class AuthService(ApplicationDbContext dbContext, TokenProvider tokenProvider) : IAuthService
 {
-    public async Task<string> Login(string email, string password)
+    public async Task<TokenResponse> Login(string email, string password)
     {
         User? user = await dbContext.Users.SingleOrDefaultAsync(u => u.Email == email);
 
@@ -20,7 +20,8 @@ public class AuthService(ApplicationDbContext dbContext, TokenProvider tokenProv
             throw new Exception("Password incorrect");
         }
 
-        return tokenProvider.Create(user);
+        var token = tokenProvider.Create(user);
+        return new TokenResponse(token);
     }
 
     public async Task<User> Register(CreateUserRequest userRequest)

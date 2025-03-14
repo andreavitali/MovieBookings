@@ -9,6 +9,6 @@ namespace MovieBookings.Core.Interfaces;
 
 public interface IAuthService
 {
-    Task<string> Login(string email, string password);
+    Task<TokenResponse> Login(string email, string password);
     Task<User> Register(CreateUserRequest userRequest);
 }

@@ -96,4 +96,16 @@ public class BookingService(ApplicationDbContext DbContext) : IBookingService
             await DbContext.SaveChangesAsync();
         }
     }
+
+    public async Task<BookingResponse> GetByIdAsync(int Id)
+    {
+        var booking = await DbContext.Bookings
+            .AsNoTracking()
+            .Include(b => b.BookedSeats)
+                .ThenInclude(bs => bs.Show)
+                    .ThenInclude(s => s.Movie)
+            .SingleOrDefaultAsync(b => b.Id == Id);
+
+        return booking?.MapToBookingDTO();
+    }
 }
