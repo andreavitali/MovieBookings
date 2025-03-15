@@ -1,10 +1,18 @@
 ﻿using MovieBookings.Data;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 namespace MovieBookings.Core;
 
 // Auth
-public record LoginRequest(string Email, string Password);
-public record CreateUserRequest(string Email, string Name, string Password);
+public record LoginRequest(
+    [Required][EmailAddress] string Email,
+    [Required] string Password);
+
+public record CreateUserRequest(
+    [Required][EmailAddress] string Email, 
+    [Required] string Name,
+    [Required][MinLength(8)] string Password);
+
 public record TokenResponse(string Token);
 
 // Shows

@@ -1,11 +1,13 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Any;
+using MiniValidation;
 using MovieBookings.Core;
 using MovieBookings.Core.Exceptions;
 using MovieBookings.Core.Interfaces;
 using MovieBookings.Data;
 using System.Text.Json;
+using LoginRequest = MovieBookings.Core.LoginRequest;
 
 namespace MovieBookings.API.Endpoints;
 
@@ -36,6 +38,7 @@ public static class AuthEndpoints
             });
 
         group.MapPost("/register", AuthEndpoints.Register)
+            .ProducesProblem(StatusCodes.Status409Conflict)
             .WithOpenApi(op =>
             {
                 op.Summary = "Register a user";
@@ -46,12 +49,16 @@ public static class AuthEndpoints
             });
     }
 
-    public static async Task<Results<Ok<TokenResponse>, ProblemHttpResult>> Login(
+    public static async Task<Results<Ok<TokenResponse>, ValidationProblem, ProblemHttpResult>> Login(
         [FromBody] LoginRequest loginRequest,
         [FromServices] IAuthService authService)
     {
         try
         {
+            if(!MiniValidator.TryValidate(loginRequest, out var errors))
+            {
+                return TypedResults.ValidationProblem(errors);
+            }
             var tokenResponse = await authService.Login(loginRequest.Email, loginRequest.Password);
             return TypedResults.Ok(tokenResponse);
         }
@@ -61,18 +68,22 @@ public static class AuthEndpoints
         }
     }
 
-    private static async Task<Results<Ok<User>, Conflict<string>>> Register(
+    private static async Task<Results<Ok<User>, ValidationProblem, ProblemHttpResult>> Register(
         [FromBody] CreateUserRequest userRequest,
         [FromServices] IAuthService authService)
     {
         try
         {
+            if (!MiniValidator.TryValidate(userRequest, out var errors))
+            {
+                return TypedResults.ValidationProblem(errors);
+            }
             var user = await authService.Register(userRequest);
             return TypedResults.Ok(user);
         }
         catch (EmailAlreadyInUseException ex)
         {
-            return TypedResults.Conflict(ex.Message);
+            return TypedResults.Problem(ex.Message, statusCode: StatusCodes.Status409Conflict);
         }           
     }
 }

@@ -2,7 +2,7 @@
 
 ## Features
 - NET 8.0
-- MinimalAPI
+- MinimalAPI with validation
 - OpenAPI documentation with Swagger (`POST /api/bookings` and `POST /api/auth/` endpoints are well documented)
 - EntityFramework with SQLite provider
 - Unit tests and integration tests

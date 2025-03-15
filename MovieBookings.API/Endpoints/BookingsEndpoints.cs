@@ -21,7 +21,6 @@ public static class BookingsEndpoints
 
         group.MapPost("/", BookingsEndpoints.CreateBooking)
             .RequireAuthorization()
-            .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status409Conflict)
             .WithOpenApi(op =>
             {
@@ -36,7 +35,7 @@ public static class BookingsEndpoints
                 return op;
             });
 
-        group.MapDelete("/{id}", BookingsEndpoints.DeleteById)
+        group.MapDelete("/{id:int}", BookingsEndpoints.DeleteById)
             .RequireAuthorization()
             .ProducesProblem(StatusCodes.Status403Forbidden)
             .WithSummary("Delete a booking")
@@ -52,21 +51,21 @@ public static class BookingsEndpoints
         return TypedResults.Ok(bookings);
     }
 
-    private static async Task<Results<Ok<BookingResponse>, ProblemHttpResult>> CreateBooking(
+    private static async Task<Results<Ok<BookingResponse>, ValidationProblem, ProblemHttpResult>> CreateBooking(
         HttpContext context,
         [FromBody] List<BookingRequest> bookings,
         [FromServices]
         IBookingService bookingService)
     {
-        // Validation (should be done with a 3rd party library!)
+        // Validation
         if (bookings.Count == 0)
         {
-            return TypedResults.Problem("Add at least one BookingRequest", statusCode: StatusCodes.Status400BadRequest);
+            return TypedResults.ValidationProblem(new Dictionary<string, string[]> { { "Bookings", ["Add at least one BookingRequest"] } });
         }
 
         if (bookings.Any(br => br.SeatId is null && br.ShowId is null))
         {
-            return TypedResults.Problem("At least one between seatId and showId should be defined", statusCode: StatusCodes.Status400BadRequest);
+            return TypedResults.ValidationProblem(new Dictionary<string, string[]> { { "BookingRequest", ["At least one between seatId and showId should be defined"] } });
         }
 
         var userId = int.Parse(context.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value);

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using MovieBookings.Core;
 using MovieBookings.Core.Interfaces;
 using MovieBookings.Core.Services;
+using System.ComponentModel.DataAnnotations;
 
 namespace MovieBookings.API.Endpoints;
 
