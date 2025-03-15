@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using MovieBookings.Core.Exceptions;
 using MovieBookings.Core.Interfaces;
 using MovieBookings.Data;
 
@@ -28,7 +29,7 @@ public class AuthService(ApplicationDbContext dbContext, TokenProvider tokenProv
     {
         if (await dbContext.Users.SingleOrDefaultAsync(u => u.Email == userRequest.Email) != null)
         {
-            throw new Exception("The email is already in use");
+            throw new EmailAlreadyInUseException(userRequest.Email);
         }
 
         var user = new User

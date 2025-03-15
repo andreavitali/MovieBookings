@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using MovieBookings.Core;
 using MovieBookings.Core.Interfaces;
+using MovieBookings.Core.Services;
 
 namespace MovieBookings.API.Endpoints;
 
@@ -11,32 +12,39 @@ public static class ShowsEndpoints
     {
         var group = builder.MapGroup("/api/shows")
             .AllowAnonymous()
-            .WithTags("Shows")
-            .WithOpenApi();
+            .WithTags("Shows");
 
-        group.MapGet("/", async Task<Ok<List<ShowResponse>>> (
-            [FromServices] IShowService showService) =>
-        {
-            var shows = await showService.GetAllAsync();
-            return TypedResults.Ok(shows);
-        })
-        .WithOpenApi(op =>
-        {
-            op.Responses["200"].Description = "All the shows available with seats details.";
-            return op;
-        })
-        .WithSummary("Get all shows")
-        .WithDescription("Gets all shows available with seats details.");
+        group.MapGet("/", ShowsEndpoints.GetAll)
+            .WithOpenApi(op =>
+            {
+                op.Summary = "Get all shows";
+                op.Description = "Gets all shows available with seats details.";
+                op.Responses["200"].Description = "All the shows available with seats details.";
+                return op;
+            });
 
-        group.MapGet("/{id:int}", async Task<Results<Ok<ShowResponse>, NotFound>> (
-               [FromRoute] int id,
-               [FromServices] IShowService showService) =>
-        {
-            var show = await showService.GetByIdAsync(id);
-            return show is null ? TypedResults.NotFound() : TypedResults.Ok(show);
-        })
-        .ProducesProblem(StatusCodes.Status404NotFound)
-        .WithSummary("Get a specific show")
-        .WithDescription("Gets the show with the specified ID.");
+        group.MapGet("/{id:int}", ShowsEndpoints.GetById)
+            .WithOpenApi(op =>
+            {
+                op.Summary = "Get a specific show";
+                op.Description = "Gets the show with the specified Id.";
+                op.Responses["200"].Description = "Show with seats details.";
+                return op;
+            });
+    }
+
+    private static async Task<Ok<List<ShowResponse>>> GetAll(
+        [FromServices] IShowService showService)
+    {
+        var shows = await showService.GetAllAsync();
+        return TypedResults.Ok(shows);
+    }
+
+    private static async Task<Results<Ok<ShowResponse>, NotFound>> GetById(
+        [FromRoute] int id,
+        [FromServices] IShowService showService)
+    {
+        var show = await showService.GetByIdAsync(id);
+        return show is null ? TypedResults.NotFound() : TypedResults.Ok(show);
     }
 }

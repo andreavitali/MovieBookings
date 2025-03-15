@@ -5,6 +5,7 @@
 - MinimalAPI
 - OpenAPI documentation with Swagger (`POST /api/bookings` and `POST /api/auth/` endpoints are well documented)
 - EntityFramework with SQLite provider
+- Unit tests and integration tests
 
 ## Database schema
 This is a diagram of the database schema:
