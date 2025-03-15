@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
-using MovieBookings.Core;
 using MovieBookings.Core.Interfaces;
+using MovieBookings.Core.Models;
 using System.Net;
 using System.Net.Http.Json;
 

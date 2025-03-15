@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using MovieBookings.Core;
 using MovieBookings.Core.Interfaces;
+using MovieBookings.Core.Models;
 using MovieBookings.Core.Services;
 using System.ComponentModel.DataAnnotations;
 

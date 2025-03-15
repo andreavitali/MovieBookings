@@ -2,12 +2,12 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Any;
 using MiniValidation;
-using MovieBookings.Core;
 using MovieBookings.Core.Exceptions;
 using MovieBookings.Core.Interfaces;
+using MovieBookings.Core.Models;
 using MovieBookings.Data;
 using System.Text.Json;
-using LoginRequest = MovieBookings.Core.LoginRequest;
+using LoginRequest = MovieBookings.Core.Models.LoginRequest;
 
 namespace MovieBookings.API.Endpoints;
 

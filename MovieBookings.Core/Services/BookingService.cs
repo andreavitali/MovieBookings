@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MovieBookings.Core.Exceptions;
 using MovieBookings.Core.Interfaces;
+using MovieBookings.Core.Models;
 using MovieBookings.Data;
 
 namespace MovieBookings.Core.Services;

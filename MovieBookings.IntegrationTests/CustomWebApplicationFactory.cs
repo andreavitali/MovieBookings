@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using MovieBookings.Core;
+using MovieBookings.Core.Models;
 using MovieBookings.Data;
 using System.Data.Common;
 using System.Net.Http.Json;

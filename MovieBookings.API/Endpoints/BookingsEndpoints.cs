@@ -1,8 +1,9 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using MovieBookings.Core;
+using MiniValidation;
 using MovieBookings.Core.Exceptions;
 using MovieBookings.Core.Interfaces;
+using MovieBookings.Core.Models;
 using System.Security.Claims;
 
 namespace MovieBookings.API.Endpoints;
@@ -53,26 +54,20 @@ public static class BookingsEndpoints
 
     private static async Task<Results<Ok<BookingResponse>, ValidationProblem, ProblemHttpResult>> CreateBooking(
         HttpContext context,
-        [FromBody] List<BookingRequest> bookings,
+        [FromBody] UserBookingsRequest bookings,
         [FromServices]
         IBookingService bookingService)
     {
-        // Validation
-        if (bookings.Count == 0)
+        if (!MiniValidator.TryValidate(bookings, out var errors))
         {
-            return TypedResults.ValidationProblem(new Dictionary<string, string[]> { { "Bookings", ["Add at least one BookingRequest"] } });
-        }
-
-        if (bookings.Any(br => br.SeatId is null && br.ShowId is null))
-        {
-            return TypedResults.ValidationProblem(new Dictionary<string, string[]> { { "BookingRequest", ["At least one between seatId and showId should be defined"] } });
+            return TypedResults.ValidationProblem(errors);
         }
 
         var userId = int.Parse(context.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value);
 
         try
         {
-            var booking = await bookingService.CreateBookingAsync(1, bookings);
+            var booking = await bookingService.CreateBookingAsync(1, bookings.BookingRequests);
             return TypedResults.Ok(booking);
         }
         catch (SeatAlreadyBookedException ex)

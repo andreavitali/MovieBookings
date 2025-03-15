@@ -1,4 +1,6 @@
-﻿namespace MovieBookings.Core.Interfaces;
+﻿using MovieBookings.Core.Models;
+
+namespace MovieBookings.Core.Interfaces;
 
 public interface IBookingService
 {

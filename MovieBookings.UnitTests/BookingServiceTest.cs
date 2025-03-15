@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
-using MovieBookings.Core;
 using MovieBookings.Core.Exceptions;
+using MovieBookings.Core.Models;
 using MovieBookings.Core.Services;
 using MovieBookings.Data;
 
