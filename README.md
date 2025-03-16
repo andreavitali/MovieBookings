@@ -3,7 +3,7 @@
 ## Features
 - NET 8.0
 - MinimalAPI with validation
-- OpenAPI documentation with Swagger (`POST /api/bookings` and `POST /api/auth/` endpoints are well documented)
+- OpenAPI documentation with Swagger
 - EntityFramework with SQLite provider
 - Unit tests and integration tests
 
@@ -16,7 +16,7 @@ For the sake of simplicity there is only one theatre with an hardcoded seats con
 
 ## Usage
 The database file is already in the repository with some seeded data.  
-The default user to use for login is:
+The default user for login is:
 ```
 {
   "email": "andrea@email.com",
@@ -24,7 +24,7 @@ The default user to use for login is:
 }
 ```
 
-Only the /api/bookings routes are protected with JWT authentication.
+_NB: Only the /api/bookings routes are protected with JWT authentication._
 
 If you want to create a new database file delete the MovieBookings.db and, from the project root folder, run:
 ```
@@ -38,6 +38,12 @@ dotnet dev-certs https --check --trust
 ```
 
 ## Missing features or improvements
-- TODO
-
-### Microservices architecture
+- Global error handling via IExceptionHandler
+- Add an admin role that can perform CRUD operations on all shows and bookings
+- Extend database model to handle multiple theathers each one with multiple screens
+- Show information of what seats were not available after a failed booking request
+- Use Result pattern instead of throwing exceptions for domain errors
+- Microservices architecture
+ 
+## Microservices architecture
+![Microservices architecture](moviebookings.png)
