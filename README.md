@@ -6,6 +6,7 @@
 - OpenAPI documentation with Swagger
 - EntityFramework with SQLite provider
 - Unit tests and integration tests
+- Github actions workflow
 
 ## Database schema
 This is a diagram of the database schema:

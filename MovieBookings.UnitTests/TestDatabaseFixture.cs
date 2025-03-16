@@ -23,7 +23,7 @@ namespace MovieBookings.UnitTests
 
             _contextOptions = new DbContextOptionsBuilder<ApplicationDbContext>()
                 .UseSqlite(_connection)
-                .LogTo(Console.WriteLine, Microsoft.Extensions.Logging.LogLevel.Information)
+                //.LogTo(Console.WriteLine, Microsoft.Extensions.Logging.LogLevel.Information)
                 .Options;
 
             using var context = new ApplicationDbContext(_contextOptions);
