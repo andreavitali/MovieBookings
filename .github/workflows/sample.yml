@@ -1,0 +1,61 @@
+name: Build and (fake) deploy ASP.Net Core app
+
+env:
+  DOTNET_VERSION: '8'
+
+on:
+  push:
+    tags:
+      - '*'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+      - uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Set up dependency caching for faster builds
+        uses: actions/cache@v3
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Build with dotnet
+        run: dotnet build --configuration Release
+
+      - name: Run tests
+        run: dotnet test --no-build --configuration Release --verbosity normal
+
+      - name: dotnet publish
+        run: dotnet publish -c Release -o ./publish
+
+      - name: Upload artifact for deployment job
+        uses: actions/upload-artifact@v4
+        with:
+          name: MovieBookings.API
+          path: ./publish
+
+  deploy:
+    permissions:
+      contents: none
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Fake deployment information
+        run: |
+          echo "✅ Build completed successfully!"
+          echo "🔗 Git commit: ${{ github.sha }}"
+          echo "🚀 Deployment would happen here (but it's currently disabled)"
